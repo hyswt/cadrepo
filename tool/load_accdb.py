@@ -1,6 +1,5 @@
 import pypyodbc
-import collections
-
+import re
 def func(accdb_file,tb_name: str,roller_name:int,index: str, input_num: int) -> dict:
     """
     用于调用access数据库内容；\n
@@ -33,35 +32,34 @@ def func(accdb_file,tb_name: str,roller_name:int,index: str, input_num: int) -> 
     columns = [column[0] for column in cursor.description]
     values = [str(value) for value in cursor.fetchone()]
     dict_ = dict(zip(columns, values))
-    
-    list1=['vddp9','vddp01','vddp234']
-    list_1=['cir7891','cir234']
-
-    for key in list(dict_.keys()):
-        if key in list1:
-            if roller_name2 in key:
-                dict_['vddp']=dict_[key]
-                for key in list(dict_.keys()):
-                    if key in list_1:
-                        if roller_name2 in key:
-                            dict_['cir_dd']=dict_[key]
-            
-
+    list1=['vddp9','vddp01','vddp234','cir7891','cir234']
+    regex = r'(?:vddp\d*|cir\d*)(?:%s|\d*$)' % roller_name2
+    for num in list1:
+        match = re.search(regex, num)
+        if match:
+            if match.group().startswith('vddp'):
+                if roller_name2 in match.group():
+                    dict_['vddp']=dict_[match.group()]
+            elif match.group().startswith('cir'):
+                if roller_name2 in match.group():
+                    dict_['cir_dd']=dict_[match.group()]
+                
     # 返回P级内圈字典
     cursor.execute('''SELECT * FROM {}级{}技术条件  WHERE {}>={}'''.format(tb_name, '内圈',index, input_num))
     columns = [column[0] for column in cursor.description]
     values = [str(value) for value in cursor.fetchone()]
     dict1_ = dict(zip(columns, values))
-    list2=['vdp9','vdp01','vdp234']
-    list_2=['cir7891','cir234']
-    for key in list(dict1_.keys()):
-        if key in list2:
-            if roller_name2 in key:
-                dict1_['vdp']=dict1_[key]
-                for key in list(dict1_.keys()):
-                    if key in list_2:
-                        if roller_name2 in key:
-                            dict1_['cir_d']=dict1_[key]
+    list2=['vdp9','vdp01','vdp234','cir7891','cir234']
+    regex1 = r'(?:vdp\d*|cir\d*)(?:%s|\d*$)' % roller_name2
+    for num in list2:
+        match = re.search(regex1, num)
+        if match:
+            if match.group().startswith('vdp'):
+                if roller_name2 in match.group():
+                    dict1_['vdp']=dict1_[match.group()]
+            elif match.group().startswith('cir'):
+                if roller_name2 in match.group():
+                    dict1_['cir_d']=dict1_[match.group()]
 
     # 返回P级总图内圈字典
     cursor.execute('''SELECT * FROM {}级{}技术条件  WHERE {}>={}'''.format(tb_name, '总图内圈',index, input_num))
@@ -69,10 +67,13 @@ def func(accdb_file,tb_name: str,roller_name:int,index: str, input_num: int) -> 
     values = [str(value) for value in cursor.fetchone()]
     dict2_ = dict(zip(columns, values))
     list3=['zvdp89','zvdp01','zvdp234']
-    for key in list(dict2_.keys()):
-        if key in list3:
-            if roller_name2 in key:
-                dict2_['zvdp']=dict2_[key]
+    regex2 = r'(?:zvdp\d*)(?:%s|\d*$)' % roller_name2
+    for num in list3:
+        match = re.search(regex2, num)
+        if match:
+            if match.group().startswith('zvdp'):
+                if roller_name2 in match.group():
+                    dict2_['zvdp']=dict2_[match.group()]
 
     # 返回P级总图外圈
     cursor.execute('''SELECT * FROM {}级{}技术条件  WHERE {}>={}'''.format(tb_name, '总图外圈',index, input_num))
@@ -80,10 +81,13 @@ def func(accdb_file,tb_name: str,roller_name:int,index: str, input_num: int) -> 
     values = [str(value) for value in cursor.fetchone()]
     dict3_ = dict(zip(columns, values))
     list4=['zvddp89','zvddp01','zvddp234']
-    for key in list(dict3_.keys()):
-        if key in list4:
-            if roller_name2 in key:
-                dict3_['zvddp']=dict3_[key]
+    regex3= r'(?:zvddp\d*)(?:%s|\d*$)' % roller_name2
+    for num in list4:
+        match = re.search(regex3, num)
+        if match:
+            if match.group().startswith('zvddp'):
+                if roller_name2 in match.group():
+                    dict3_['zvddp']=dict3_[match.group()]
 
 
     # 返回P级粗糙度字典
@@ -91,20 +95,31 @@ def func(accdb_file,tb_name: str,roller_name:int,index: str, input_num: int) -> 
     columns = [column[0] for column in cursor.description]
     values = [str(value) for value in cursor.fetchone()]
     dict4_ = dict(zip(columns, values))
+    "rsmin索引"
+    '''rsmin=0.6,用dict_6.keys()获取'''
+    cursor.execute('''SELECT * FROM {}  WHERE {}>={}'''.format('非装配倒角尺寸','rsmin', 0.6))
+    columns = [column[0] for column in cursor.description]
+    values = [str(value) for value in cursor.fetchone()]
+    dict5_ = dict(zip(columns, values))
     "倒角返回字典"
     
-    cursor = conn.cursor()
-    sql1=cursor.execute('''SELECT * FROM 直径系列{}  WHERE {}>={}'''.format(roller_name2,index, input_num))
-    columns = [column[0] for column in sql1.description]
-    values = [value for value in sql1.fetchone()]
-    dict5_ = dict(zip(columns, values)) 
-    ordered_dict = collections.OrderedDict(dict5_) 
-    last_key, last_value = ordered_dict.popitem() #获取最后一列的键值
-    sql_='''SELECT * FROM 倒角 where r1smin={0} and dd超过<{1} and dd到>{1}'''.format(last_value,input_num)
-    cursor.execute(sql_)
-    data=cursor.fetchone()
-    columns1 = [column[0] for column in cursor.description]
-    dict_6 = dict(zip(columns1, data))
+    # cursor = conn.cursor()
+    # sql1=cursor.execute('''SELECT * FROM 直径系列{}  WHERE {}>={}'''.format(roller_name2,index, input_num))
+    # columns = [column[0] for column in sql1.description]
+    # values = [value for value in sql1.fetchone()]
+    # dict5_ = dict(zip(columns, values)) 
+    # ordered_dict = collections.OrderedDict(dict5_) 
+    # last_key, last_value = ordered_dict.popitem() #获取最后一列的键值
+    # sql_='''SELECT * FROM 倒角 where r1smin={0} and dd超过<{1} and dd到>{1}'''.format(last_value,input_num)
+    # cursor.execute(sql_)
+    # data=cursor.fetchone()
+    # columns1 = [column[0] for column in cursor.description]
+    # dict_6 = dict(zip(columns1, data))
+    # dict_6['rs_a']=dict_6['rsmin']
+    # dict_6['rs_r']=dict_6['rsmin']
+    # dict_6['r1s_r']=dict_6['rsmin']
+    # print(dict_6)
+    # dict_6['rsmin']=10
 
     # 合并字典
     def merge_dicts(*dict_args):
@@ -113,7 +128,7 @@ def func(accdb_file,tb_name: str,roller_name:int,index: str, input_num: int) -> 
             # TODO 
             result.update(dictionary)
         return result
-    dict_7=merge_dicts(dict_,dict1_,dict2_,dict3_,dict4_,dict_6)
+    dict_7=merge_dicts(dict_,dict1_,dict2_,dict3_,dict4_,dict5_)
    
     
 
