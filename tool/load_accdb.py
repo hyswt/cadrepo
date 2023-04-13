@@ -27,37 +27,63 @@ def func(accdb_file,tb_name: str,roller_name:int,index: str, input_num: int) -> 
     #NOTE 切片
     roller_name1=str(roller_name)
     roller_name2=roller_name1[-3]
+
     # 返回P级外圈字典
-    
     cursor.execute('''SELECT * FROM {}级{}技术条件  WHERE {}>={}'''.format(tb_name, '外圈',index, input_num))
     columns = [column[0] for column in cursor.description]
     values = [str(value) for value in cursor.fetchone()]
     dict_ = dict(zip(columns, values))
+    
     list1=['vddp9','vddp01','vddp234']
-    for key in dict_.keys():
+    list_1=['cir7891','cir234']
+
+    for key in list(dict_.keys()):
         if key in list1:
             if roller_name2 in key:
-                print(roller_name2)
+                dict_['vddp']=dict_[key]
+                for key in list(dict_.keys()):
+                    if key in list_1:
+                        if roller_name2 in key:
+                            dict_['cir_dd']=dict_[key]
             
-    
+
     # 返回P级内圈字典
     cursor.execute('''SELECT * FROM {}级{}技术条件  WHERE {}>={}'''.format(tb_name, '内圈',index, input_num))
     columns = [column[0] for column in cursor.description]
     values = [str(value) for value in cursor.fetchone()]
     dict1_ = dict(zip(columns, values))
-    print(dict1_)
+    list2=['vdp9','vdp01','vdp234']
+    list_2=['cir7891','cir234']
+    for key in list(dict1_.keys()):
+        if key in list2:
+            if roller_name2 in key:
+                dict1_['vdp']=dict1_[key]
+                for key in list(dict1_.keys()):
+                    if key in list_2:
+                        if roller_name2 in key:
+                            dict1_['cir_d']=dict1_[key]
 
     # 返回P级总图内圈字典
     cursor.execute('''SELECT * FROM {}级{}技术条件  WHERE {}>={}'''.format(tb_name, '总图内圈',index, input_num))
     columns = [column[0] for column in cursor.description]
     values = [str(value) for value in cursor.fetchone()]
     dict2_ = dict(zip(columns, values))
+    list3=['zvdp89','zvdp01','zvdp234']
+    for key in list(dict2_.keys()):
+        if key in list3:
+            if roller_name2 in key:
+                dict2_['zvdp']=dict2_[key]
 
     # 返回P级总图外圈
     cursor.execute('''SELECT * FROM {}级{}技术条件  WHERE {}>={}'''.format(tb_name, '总图外圈',index, input_num))
     columns = [column[0] for column in cursor.description]
     values = [str(value) for value in cursor.fetchone()]
     dict3_ = dict(zip(columns, values))
+    list4=['zvddp89','zvddp01','zvddp234']
+    for key in list(dict3_.keys()):
+        if key in list4:
+            if roller_name2 in key:
+                dict3_['zvddp']=dict3_[key]
 
 
     # 返回P级粗糙度字典
@@ -99,5 +125,5 @@ def func(accdb_file,tb_name: str,roller_name:int,index: str, input_num: int) -> 
 
 
 if __name__ == "__main__":
-    print(func("Data_轻系列","P6",7300, "d", 95))
+    print(func("Data_深沟球","P6",7300, "d", 95))
     pass
